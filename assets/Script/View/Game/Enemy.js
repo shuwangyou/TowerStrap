@@ -23,7 +23,11 @@ cc.Class({
 
     unuse() {
         this._enemyCheckGridPosCall = null
-        this.node.stopAllActions()
+        this._bulletsMap.forEach((bullet, uuid) => {
+            let sc_bullet = bullet.getComponent(bullet.name)
+            sc_bullet.putToPool()
+        })
+        this.reset()
     },
 
     reuse() {
@@ -56,11 +60,19 @@ cc.Class({
     //====================================================================
 
     init(HP, gridPos, enemyCheckGridPosCall) {
-        this._fullHP = this._fullHP || HP
         this._hp = HP
-        this.sp_health.fillRange = 1
         this._gridPos = gridPos
         this._enemyCheckGridPosCall = enemyCheckGridPosCall
+
+        this._fullHP = this._hp
+        
+        this.reset()
+    },
+
+    reset() {
+        this.sp_health.fillRange = 1
+        this._bulletsMap = new Map()
+        this.node.stopAllActions()
     },
 
     setGridPos(gridPos) {
@@ -79,5 +91,13 @@ cc.Class({
 
     getHP() {
         return this._hp
+    },
+
+    addBullet(bullet) {
+        this._bulletsMap.set(bullet.uuid, bullet)
+    },
+
+    removeBullet(bullet) {
+        this._bulletsMap.delete(bullet.uuid)
     },
 });

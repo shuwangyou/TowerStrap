@@ -206,20 +206,25 @@ cc.Class({
                     minDistance = enemy.position.sub(ways[0]).mag(),
                     minIndex = 0,
                     curGridPos = this._pos2GridPos(enemy.position),
-                    curMapItem = this._mapItemsMap.get(curGridPos.x).get(curGridPos.y),
                     nextIndex = 0
                 for (let index = 0; index < ways.length; index++) {
-                    let mapItem = ways[index]
-                    let distance = enemy.position.sub(mapItem).mag()
+                    let mapItem = ways[index],
+                        distance = enemy.position.sub(mapItem).mag()
                     if (distance <= minDistance) {
                         minDistance = distance
                         minIndex = index || 1
                     }
-                    if (curMapItem === mapItem) {
-                        nextIndex = index + 1
-                    }
-                    wayIndex = nextIndex || minIndex
                 }
+                let minMapItem = ways[minIndex],
+                    sc_minMapItem = minMapItem.getComponent(minMapItem.name),
+                    minGridPos = sc_minMapItem.getGridPos(),
+                    nextMapItem = ways[minIndex + 1],
+                    sc_nextMapItem = nextMapItem && nextMapItem.getComponent(nextMapItem.name),
+                    nextGridPos = sc_nextMapItem && sc_nextMapItem.getGridPos()
+                if (nextGridPos && ((minGridPos.x <= curGridPos.x && curGridPos.x <= nextGridPos.x) || (nextGridPos.x <= curGridPos.x && curGridPos.x <= minGridPos.x))) {
+                    nextIndex = minIndex + 1
+                }
+                wayIndex = nextIndex || minIndex
                 enemy.stopAllActions()
                 this._enemyRun(enemy, ways, wayIndex)
             }
@@ -302,42 +307,44 @@ cc.Class({
                 lastGridPos = sc_enemy.getGridPos()
             if (gridPos.x !== lastGridPos.x || gridPos.y !== lastGridPos.y) {
                 let mapItem = this._mapItemsMap.get(gridPos.x).get(gridPos.y),
-                    lastMapItem = this._mapItemsMap.get(lastGridPos.x).get(lastGridPos.y)
-                if (mapItem && mapItem.isValid) {
-                    let sc_mapItem = mapItem.getComponent(mapItem.name),
-                        sc_lastMapItem = lastMapItem.getComponent(lastMapItem.name),
-                        towerGridPosInRange = sc_mapItem.getTowerGridPosInRange(),
-                        lastTowerGridPosInRange = sc_lastMapItem.getTowerGridPosInRange(),
-                        addTowersMap = new Map()
-                    sc_lastMapItem.removeEnemy(enemy)
-                    sc_mapItem.addEnemy(enemy)
-                    if (towerGridPosInRange.size > 0) {
-                        towerGridPosInRange.forEach((value, x) => {
-                            value.forEach((towerPos, y) => {
-                                let tower = this._towerItemsMap.get(x).get(y)
-                                if (tower && tower.isValid && tower.parent) {
-                                    addTowersMap.set(tower.uuid, tower)
-                                    let sc_tower = tower.getComponent(tower.name)
-                                    sc_tower.addEnemy(enemy)
-                                }
-                            })
+                    lastMapItem = this._mapItemsMap.get(lastGridPos.x).get(lastGridPos.y),
+                    sc_mapItem = mapItem.getComponent(mapItem.name),
+                    sc_lastMapItem = lastMapItem.getComponent(lastMapItem.name),
+                    towerGridPosInRange = sc_mapItem.getTowerGridPosInRange(),
+                    lastTowerGridPosInRange = sc_lastMapItem.getTowerGridPosInRange(),
+                    addTowersMap = new Map()
+                sc_mapItem.addEnemy(enemy)
+                if (towerGridPosInRange.size > 0) {
+                    towerGridPosInRange.forEach((value, x) => {
+                        value.forEach((towerPos, y) => {
+                            let tower = this._towerItemsMap.get(x).get(y)
+                            if (tower && tower.isValid && tower.parent) {
+                                addTowersMap.set(tower.uuid, tower)
+                            }
                         })
-                    }
-                    if (lastTowerGridPosInRange.size > 0) {
-                        lastTowerGridPosInRange.forEach((value, x) => {
-                            value.forEach((towerPos, y) => {
-                                let tower = this._towerItemsMap.get(x).get(y)
-                                if (tower && tower.isValid && tower.parent) {
-                                    if (!addTowersMap.get(tower.uuid)) {
-                                        let sc_tower = tower.getComponent(tower.name)
-                                        sc_tower.removeEnemy(enemy)
-                                    }
-                                }
-                            })
-                        })
-                    }
-                    sc_enemy.setGridPos(gridPos)
+                    })
                 }
+                sc_lastMapItem.removeEnemy(enemy)
+                if (lastTowerGridPosInRange.size > 0) {
+                    lastTowerGridPosInRange.forEach((value, x) => {
+                        value.forEach((towerPos, y) => {
+                            let tower = this._towerItemsMap.get(x).get(y)
+                            if (tower && tower.isValid && tower.parent) {
+                                if (!addTowersMap.get(tower.uuid)) {
+                                    let sc_tower = tower.getComponent(tower.name)
+                                    sc_tower.removeEnemy(enemy)
+                                }
+                            }
+                        })
+                    })
+                }
+                addTowersMap.forEach((tower, uuid) => {
+                    if (tower && tower.isValid && tower.parent) {
+                        let sc_tower = tower.getComponent(tower.name)
+                        sc_tower.addEnemy(enemy)
+                    }
+                })
+                sc_enemy.setGridPos(gridPos)
             }
         }
     },
@@ -369,6 +376,8 @@ cc.Class({
     },
 
     _onItemSelected(select, gridPos, mapItem, firstClick, range) {
+        cc.log(cc.js.getClassName(this) + ` _onItemSelected gridPos = `, gridPos)
+
         let tower = this._towerItemsMap.get(gridPos.x) && this._towerItemsMap.get(gridPos.x).get(gridPos.y),
             sc_tower,
             sc_mapItem = mapItem.getComponent(mapItem.name)
@@ -382,7 +391,7 @@ cc.Class({
                     tower.width = mapItem.width
                     tower.height = mapItem.height
                     sc_tower = tower.getComponent(tower.name)
-                    sc_tower.reset(gridPos, mapItem, this._bulletPool, (dt, bullet, targetEnemy) => {
+                    sc_tower.init(gridPos, mapItem, this._bulletPool, (dt, bullet, targetEnemy) => {
                         this._bulletUpdateCall(dt, bullet, targetEnemy)
                     })
                     this._towerItemsMap.set(gridPos.x, this._towerItemsMap.get(gridPos.x) || new Map())
@@ -449,6 +458,20 @@ cc.Class({
                 } else {
                     // 击中
                     if (sc_targetEnemy.onHit(Const.Game.Tower.BulletDamage) <= 0) {
+                        let targetGridPos = sc_targetEnemy.getGridPos()
+                            targetMapItem = this._mapItemsMap.get(targetGridPos.x).get(targetGridPos.y),
+                            sc_targetMapItem = targetMapItem.getComponent(targetMapItem.name),
+                            sc_targetMapItem.removeEnemy(targetEnemy)
+                            targetTowers = sc_targetMapItem.getTowerGridPosInRange()
+                            targetTowers.forEach((value, x) => {
+                                value.forEach((towerPos, y) => {
+                                    let targetTower = this._towerItemsMap.get(x).get(y)
+                                    if (targetTower && targetTower.isValid && targetTower.parent) {
+                                        let sc_targetTower = targetTower.getComponent(targetTower.name)
+                                        sc_targetTower.removeEnemy(targetEnemy)
+                                    }
+                                })
+                            })
                         this._enemyPool.put(targetEnemy)
                         this._curEnemies.delete(targetEnemy.uuid)
                         this._setScore(this._getScore() + Const.Game.Enemy.Score)
@@ -465,16 +488,16 @@ cc.Class({
 
     _setTowersInRange(sc_tower, range) {
         let gridPos = sc_tower.getGridPos()
-        for (let x = gridPos.x - range; x < gridPos.x + range; x++) {
-            for (let y = gridPos.y - range; y < gridPos.y + range; y++) {
+        for (let x = gridPos.x - range; x <= gridPos.x + range; x++) {
+            for (let y = gridPos.y - range; y <= gridPos.y + range; y++) {
                 if (x >= 0 && x < this._widthItemNum && y >= 0 && y < this._heightItemNum) {
                     let tempGraidPos = cc.js.createMap()
                     tempGraidPos.x = x
                     tempGraidPos.y = y
-                    let mapItem = this._mapItemsMap.get(tempGraidPos.x).get(tempGraidPos.y),
-                        sc_mapItem = mapItem.getComponent(mapItem.name)
-                    sc_mapItem.addTowerGridPosInRange(gridPos)
-                    let enemiesMap = sc_mapItem.getEnemiesMap()
+                    let tempMapItem = this._mapItemsMap.get(tempGraidPos.x).get(tempGraidPos.y),
+                        sc_tempMapItem = tempMapItem.getComponent(tempMapItem.name)
+                    sc_tempMapItem.addTowerGridPosInRange(gridPos)
+                    let enemiesMap = sc_tempMapItem.getEnemiesMap()
                     if (enemiesMap.size > 0) {
                         enemiesMap.forEach((enemy, uuid) => {
                             sc_tower.addEnemy(enemy)
@@ -487,21 +510,23 @@ cc.Class({
 
     _removeTowersInRange(sc_tower, range) {
         let gridPos = sc_tower.getGridPos()
-        for (let x = gridPos.x - range; x < gridPos.x + range; x++) {
-            for (let y = gridPos.y - range; y < gridPos.y + range; y++) {
+        cc.log(cc.js.getClassName(this) + ` _removeTowersInRange gridPos = `, gridPos)
+
+        for (let x = gridPos.x - range; x <= gridPos.x + range; x++) {
+            for (let y = gridPos.y - range; y <= gridPos.y + range; y++) {
                 if (x >= 0 && x < this._widthItemNum && y >= 0 && y < this._heightItemNum) {
                     let tempGraidPos = cc.js.createMap()
                     tempGraidPos.x = x
                     tempGraidPos.y = y
-                    let mapItem = this._mapItemsMap.get(tempGraidPos.x).get(tempGraidPos.y),
-                        sc_mapItem = mapItem.getComponent(mapItem.name)
-                    let enemiesMap = sc_mapItem.getEnemiesMap()
+                    let tempMapItem = this._mapItemsMap.get(tempGraidPos.x).get(tempGraidPos.y),
+                        sc_tempMapItem = tempMapItem.getComponent(tempMapItem.name)
+                    let enemiesMap = sc_tempMapItem.getEnemiesMap()
                     if (enemiesMap.size > 0) {
                         enemiesMap.forEach((enemy, uuid) => {
                             sc_tower.removeEnemy(enemy)
                         })
                     }
-                    sc_mapItem.removeTowerGridPosInRange(gridPos)
+                    sc_tempMapItem.removeTowerGridPosInRange(gridPos)
                 }
             }
         }

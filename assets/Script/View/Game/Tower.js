@@ -23,17 +23,17 @@ cc.Class({
     },
 
     update(dt) {
-        if (this._targetEnemy && this._targetEnemy.isValid) {
-            if (this._targetEnemy.parent) {
-                let posOffset = JKUtils.analyzePosOffset(this.node.position, this._targetEnemy.position)
-                this.node.angle = -posOffset.degree
-            } else {
-                this.removeEnemy(this._targetEnemy)
-            }
+        if (this._targetEnemy && this._targetEnemy.isValid && this._targetEnemy.parent) {
+            let posOffset = JKUtils.analyzePosOffset(this.node.position, this._targetEnemy.position)
+            this.node.angle = -posOffset.degree
         }
     },
 
     unuse() {
+        this._mapItem = null
+        this._gridPos = null
+        this._bulletPool = null
+        this._bulletUpdateCall = null
         this.reset()
     },
 
@@ -88,34 +88,26 @@ cc.Class({
     },
 
     _startAttack() {
-        this._targetEnemy = this._enemiesMap.get(this._enemiesMap.keys().next().value)
-        if (this._targetEnemy && this._targetEnemy.isValid) {
-            if (this._targetEnemy.parent) {
-                if (this._enemiesMap.size > 0 && !this._firing) {
-                    this._firing = true
-                    this.schedule(this._fireOneBullet, Const.Game.Tower.FireSpeed.Normal, cc.macro.REPEAT_FOREVER)
-                    this._fireOneBullet()
-                }
-            } else {
-                this.removeEnemy(this._targetEnemy)
+        this._targetEnemy = this._enemiesMap.values().next().value
+        if (this._targetEnemy && this._targetEnemy.isValid && this._targetEnemy.parent) {
+            if (this._enemiesMap.size > 0 && !this._firing) {
+                this._firing = true
+                this.schedule(this._fireOneBullet, Const.Game.Tower.FireSpeed.Normal, cc.macro.REPEAT_FOREVER)
+                this._fireOneBullet()
             }
         }
     },
 
     _fireOneBullet() {
-        if (this._targetEnemy && this._targetEnemy.isValid) {
-            if (this._targetEnemy.parent) {
-                let bullet = this._bulletPool.get() || cc.instantiate(this.prfb_bullet),
-                    sc_bullet = bullet.getComponent(bullet.name)
-                sc_bullet.init(this._targetEnemy, (dt, bullet, targetEnemy) => {
-                    this._bulletUpdateCall && this._bulletUpdateCall(dt, bullet, targetEnemy)
-                })
-                this.node.parent.addChild(bullet)
-                bullet.x = this.node.x
-                bullet.y = this.node.y
-            } else {
-                this.removeEnemy(this._targetEnemy)
-            }
+        if (this._targetEnemy && this._targetEnemy.isValid && this._targetEnemy.parent) {
+            let bullet = this._bulletPool.get() || cc.instantiate(this.prfb_bullet),
+                sc_bullet = bullet.getComponent(bullet.name)
+            sc_bullet.init(this._bulletPool, this._targetEnemy, (dt, bullet, targetEnemy) => {
+                this._bulletUpdateCall && this._bulletUpdateCall(dt, bullet, targetEnemy)
+            })
+            this.node.parent.addChild(bullet)
+            bullet.x = this.node.x
+            bullet.y = this.node.y
         }
     },
 
@@ -126,18 +118,23 @@ cc.Class({
 
     //====================================================================
     //=============================外部方法===============================
-    //====================================================================
+    //====================================================================\
 
-    reset(gridPos, mapItem, bulletPool, bulletUpdateCall) {
+    init(gridPos, mapItem, bulletPool, bulletUpdateCall) {
         this._mapItem = mapItem
         this._gridPos = gridPos
         this._bulletPool = bulletPool
         this._bulletUpdateCall = bulletUpdateCall
 
+        this.reset()
+    },
+
+    reset() {
         this.nd_spTower.active = false
         this.nd_selected.active = false
         this._mapItem && (this.nd_spRange.width = this.nd_spRange.height = this._mapItem.width)
         this.nd_selected.scale = 0
+        this.nd_selected.stopAllActions()
         this._switchStatus(Const.Game.Tower.Status.Waiting)
         this._enemiesMap = new Map()
         this._targetEnemy = null
@@ -174,13 +171,15 @@ cc.Class({
     },
 
     removeEnemy(enemy) {
-        this._targetEnemy === enemy && (this._targetEnemy = null)
-        this._enemiesMap.delete(enemy.uuid)
-        if (this._status !== Const.Game.Tower.Status.Building) {
-            if (this._enemiesMap.size > 0) {
-                this._switchStatus(Const.Game.Tower.Status.Attacking)
-            } else {
-                this._switchStatus(Const.Game.Tower.Status.Waiting)
+        if (enemy) {
+            this._targetEnemy === enemy && (this._targetEnemy = null)
+            this._enemiesMap.delete(enemy.uuid)
+            if (this._status !== Const.Game.Tower.Status.Building) {
+                if (this._enemiesMap.size > 0) {
+                    this._switchStatus(Const.Game.Tower.Status.Attacking)
+                } else {
+                    this._switchStatus(Const.Game.Tower.Status.Waiting)
+                }
             }
         }
     },

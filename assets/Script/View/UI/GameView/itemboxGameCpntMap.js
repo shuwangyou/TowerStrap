@@ -100,6 +100,8 @@ cc.Class({
     },
 
     removeTowerGridPosInRange(gridPos) {
+        cc.log(cc.js.getClassName(this) + ` removeTowerGridPosInRange gridPos = `, gridPos)
+        
         this._graidPosInRangeMap.get(gridPos.x).delete(gridPos.y)
         if (this._graidPosInRangeMap.get(gridPos.x).size <= 0) {
             this._graidPosInRangeMap.delete(gridPos.x)

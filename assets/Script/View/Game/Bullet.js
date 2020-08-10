@@ -17,7 +17,10 @@ cc.Class({
     },
 
     unuse() {
+        this._bulletPool = null
+        this.sc_targetEnemy.removeBullet(this.node)
         this._targetEnemy = null
+        this.sc_targetEnemy = null
         this._bulletUpdateCall = null
         this.reset()
     },
@@ -33,12 +36,22 @@ cc.Class({
     //=============================外部方法===============================
     //====================================================================
 
-    init(targetEnemy, bulletUpdateCall) {
+    init(bulletPool, targetEnemy, bulletUpdateCall) {
+        this._bulletPool = bulletPool
         this._targetEnemy = targetEnemy
         this._bulletUpdateCall = bulletUpdateCall
+
+        this.sc_targetEnemy = targetEnemy.getComponent(targetEnemy.name)
+        this.sc_targetEnemy.addBullet(this.node)
+
+        this.reset()
     },
 
     reset() {
         this.node.stopAllActions()
+    },
+
+    putToPool() {
+        this._bulletPool.put(this.node)
     },
 });
