@@ -199,34 +199,12 @@ cc.Class({
         this._curEnemies && this._curEnemies.forEach(enemy => {
             if (enemy && enemy.isValid && enemy.parent) {
                 let sc_enemy = enemy.getComponent(enemy.name),
-                    startItem = sc_enemy.startItem,
-                    endItem = sc_enemy.endItem,
-                    ways = this._enemyWaysMap.get(startItem).get(endItem),
-                    wayIndex = 1,
-                    minDistance = enemy.position.sub(ways[0]).mag(),
-                    minIndex = 0,
-                    curGridPos = this._pos2GridPos(enemy.position),
-                    nextIndex = 0
-                for (let index = 0; index < ways.length; index++) {
-                    let mapItem = ways[index],
-                        distance = enemy.position.sub(mapItem).mag()
-                    if (distance <= minDistance) {
-                        minDistance = distance
-                        minIndex = index || 1
-                    }
-                }
-                let minMapItem = ways[minIndex],
-                    sc_minMapItem = minMapItem.getComponent(minMapItem.name),
-                    minGridPos = sc_minMapItem.getGridPos(),
-                    nextMapItem = ways[minIndex + 1],
-                    sc_nextMapItem = nextMapItem && nextMapItem.getComponent(nextMapItem.name),
-                    nextGridPos = sc_nextMapItem && sc_nextMapItem.getGridPos()
-                if (nextGridPos && ((minGridPos.x <= curGridPos.x && curGridPos.x <= nextGridPos.x) || (nextGridPos.x <= curGridPos.x && curGridPos.x <= minGridPos.x))) {
-                    nextIndex = minIndex + 1
-                }
-                wayIndex = nextIndex || minIndex
-                enemy.stopAllActions()
-                this._enemyRun(enemy, ways, wayIndex)
+                    gridPos = sc_enemy.getGridPos()
+                    startItem = this._mapItemsMap.get(gridPos.x).get(gridPos.y),
+                    endItem = sc_enemy.endItem
+                this._aStart.searchWay(startItem, endItem, (steps) => {
+                    this._enemyRun(enemy, steps, 1)
+                })
             }
         })
     },
@@ -260,8 +238,8 @@ cc.Class({
         this.nd_unitCtn.addChild(enemy)
         enemy.x = startPos.x
         enemy.y = startPos.y
-        enemy.width = startItem.width
-        enemy.height = startItem.height
+        enemy.width = startItem.width * 0.75
+        enemy.height = startItem.height * 0.75
         let sc_enemy = enemy.getComponent(enemy.name)
         sc_enemy.init(Const.Game.Enemy.HP + this._rushCnt * 0.01, startGridPos, (dt, enemy) => {
             this._enemyUpdateCall(dt, enemy)
@@ -285,18 +263,21 @@ cc.Class({
     },
 
     _enemyRun(enemy, ways, wayIndex) {
-        let targetItem = ways[wayIndex++]
-        if (targetItem) {
-            let time = enemy.position.sub(targetItem.position).mag() / Const.Game.Enemy.MoveSpeed
-            enemy.runAction(cc.sequence(cc.moveTo(time, targetItem.position), cc.callFunc(() => {
-                enemy.x = targetItem.position.x
-                enemy.y = targetItem.position.y
-                this._enemyRun(enemy, ways, wayIndex)
-            })))
-        } else {
-            this._enemyPool.put(enemy)
-            this._setPlayerHP(this._getPlayerHP() - 1)
-            this._curEnemies.delete(enemy.uuid)
+        if (ways) {
+            enemy.stopAllActions()
+            let targetItem = ways[wayIndex++]
+            if (targetItem) {
+                let time = enemy.position.sub(targetItem.position).mag() / Const.Game.Enemy.MoveSpeed
+                enemy.runAction(cc.sequence(cc.moveTo(time, targetItem.position), cc.callFunc(() => {
+                    enemy.x = targetItem.position.x
+                    enemy.y = targetItem.position.y
+                    this._enemyRun(enemy, ways, wayIndex)
+                })))
+            } else {
+                this._enemyPool.put(enemy)
+                this._setPlayerHP(this._getPlayerHP() - 1)
+                this._curEnemies.delete(enemy.uuid)
+            }
         }
     },
 
@@ -421,6 +402,8 @@ cc.Class({
                         // 双击空地
                         this._aStart.setMoveAbled(mapItem, false)
                         if (this._getScore() >= Const.Game.Tower.Expenditure && this._initEnemyWays()) {
+                            tower.width = mapItem.width
+                            tower.height = mapItem.height
                             sc_tower.buildTower()
                             this._setTowersInRange(sc_tower, range)
                             this._setScore(this._getScore() - Const.Game.Tower.Expenditure)
