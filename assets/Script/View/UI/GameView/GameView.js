@@ -21,6 +21,10 @@ export default cc.Class({
     _init(data) {
         cc.log(cc.js.getClassName(this) + ` _init`)
 
+        if (data) {
+            this._widthItemNum = data.width + 4
+            this._heightItemNum = data.height + 4
+        }
     },
 
     _onLoad() {
@@ -31,8 +35,8 @@ export default cc.Class({
 
         // Game
         this.JKModelUpdateTool.put(Const.GameView.CpntName.Game, {
-            widthItemNum: 4 + Const.Game.GridWidth,
-            heightItemNum: 4 + Const.Game.GridHeight,
+            widthItemNum: this._widthItemNum || 4 + Const.Game.GridWidth,
+            heightItemNum: this._heightItemNum || 4 + Const.Game.GridHeight,
             score: Const.Game.Tower.Expenditure * (Math.ceil(Const.Game.GridHeight / 3) + 1) * 2,
             playerHP: Const.Game.PlayerHP,
         })

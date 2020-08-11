@@ -11,7 +11,7 @@ export default cc.Class({
         cc.log(cc.js.getClassName(this) + ` init`)
 
         this.JKModelUpdateTool = this.JKModelUpdateTool || new JKModelUpdateTool()
-        this._init()
+        this._init(data)
     },
 
     onLoad() {

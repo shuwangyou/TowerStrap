@@ -88,7 +88,10 @@ export default cc.Class({
                     this.bindBtnEvent(this.sc_hallUICpnt.getNdBtnStartGame(), (event) => {
                         cc.log(cc.js.getClassName(this) + ` onStartGame`)
 
-                        cc.JK.UIManager.openView(`GameView`)
+                        cc.JK.UIManager.openView(`GameView`, {
+                            width: this.sc_hallUICpnt.getWidth(),
+                            height: this.sc_hallUICpnt.getHeight(),
+                        })
                     })
 
                     cc.JK.JKTaskQueueTool.doneCMD(cmd)

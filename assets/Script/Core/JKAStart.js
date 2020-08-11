@@ -106,9 +106,6 @@ export default class JKAStart {
                     sc_next = sc_item.next,
                     nextPos = sc_next && sc_next.gridPos && cc.v2(sc_next.gridPos),
                     vector2 = nextPos && nextPos.sub(itemPos)
-                if (itemPos.x === 10 && itemPos.y === 6) {
-                    let test
-                }
                 if (vector1 && vector2) {
                     if (!cc.Vec2.strictEquals(vector1, vector2)) {
                         let vector3 = vector1.add(vector2),

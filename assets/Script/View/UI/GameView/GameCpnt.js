@@ -66,11 +66,7 @@ cc.Class({
                 gridPos = cc.js.createMap(),
                 disabled = false,
                 tempHeightNum = (this._heightItemNum - 4) / 3 + 2,
-                types = [],
-                top = false,
-                bottom = false,
-                left = false,
-                right = false
+                types = []
             gridPos.x = x
             gridPos.y = y
             let item = this.nd_mapCtn.children[index]
@@ -90,24 +86,21 @@ cc.Class({
                 this._aStart.setMoveAbled(item, false)
             },
             addTop = () => {
-                top = true
                 types.push(Const.GameView.ItemType.Top)
                 this._topItemGridPoss.push(gridPos)
             },
             addBottom = () => {
-                bottom = true
                 types.push(Const.GameView.ItemType.Bottom)
                 this._bottomItemGridPoss.push(gridPos)
             },
             addLeft = () => {
-                left = true
                 types.push(Const.GameView.ItemType.Left)
                 this._leftItemGridPoss.push(gridPos)
             },
             addRight = () => {
-                right = true
                 types.push(Const.GameView.ItemType.Right)
                 this._rightItemGridPoss.push(gridPos)
+                cc.log(item)
             }
             if (y === 0 || y === 1 || y === this._heightItemNum - 2 || y === this._heightItemNum - 1) {
                 addDisabled()

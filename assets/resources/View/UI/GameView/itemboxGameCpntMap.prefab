@@ -553,14 +553,14 @@
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
-      "x": 0.5,
+      "x": 1,
       "y": 0.5
     },
     "_trs": {
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        -25,
+        -18.5,
         0,
         0,
         0,
@@ -596,13 +596,13 @@
     "alignMode": 1,
     "_target": null,
     "_alignFlags": 13,
-    "_left": -0.1,
+    "_left": 0,
     "_right": 0,
     "_top": 0.1,
     "_bottom": 0.1,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,
-    "_isAbsLeft": false,
+    "_isAbsLeft": true,
     "_isAbsRight": true,
     "_isAbsTop": false,
     "_isAbsBottom": false,
@@ -690,14 +690,14 @@
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
-      "x": 0.5,
+      "x": 0,
       "y": 0.5
     },
     "_trs": {
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        25,
+        18.5,
         0,
         0,
         0,
@@ -734,13 +734,13 @@
     "_target": null,
     "_alignFlags": 37,
     "_left": 0,
-    "_right": -0.1,
+    "_right": 0,
     "_top": 0.1,
     "_bottom": 0.1,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,
     "_isAbsLeft": true,
-    "_isAbsRight": false,
+    "_isAbsRight": true,
     "_isAbsTop": false,
     "_isAbsBottom": false,
     "_isAbsHorizontalCenter": true,
@@ -828,14 +828,14 @@
     "_anchorPoint": {
       "__type__": "cc.Vec2",
       "x": 0.5,
-      "y": 0.5
+      "y": 0
     },
     "_trs": {
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
         0,
-        25,
+        18.5,
         0,
         0,
         0,
@@ -872,13 +872,13 @@
     "_alignFlags": 41,
     "_left": 0.1,
     "_right": 0.1,
-    "_top": -0.1,
+    "_top": 0,
     "_bottom": 22.5,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,
     "_isAbsLeft": false,
     "_isAbsRight": false,
-    "_isAbsTop": false,
+    "_isAbsTop": true,
     "_isAbsBottom": true,
     "_isAbsHorizontalCenter": true,
     "_isAbsVerticalCenter": true,
@@ -965,14 +965,14 @@
     "_anchorPoint": {
       "__type__": "cc.Vec2",
       "x": 0.5,
-      "y": 0.5
+      "y": 1
     },
     "_trs": {
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
         0,
-        -25,
+        -18.5,
         0,
         0,
         0,
@@ -1010,13 +1010,13 @@
     "_left": 0.1,
     "_right": 0.1,
     "_top": 22.5,
-    "_bottom": -0.1,
+    "_bottom": 0,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,
     "_isAbsLeft": false,
     "_isAbsRight": false,
     "_isAbsTop": true,
-    "_isAbsBottom": false,
+    "_isAbsBottom": true,
     "_isAbsHorizontalCenter": true,
     "_isAbsVerticalCenter": true,
     "_originalWidth": 4,

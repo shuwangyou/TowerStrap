@@ -154,7 +154,7 @@ cc.Class({
         if (select) {
             this.nd_selected.active = true
             this.nd_selected.scale = 0
-            this.nd_spRange.width = this.nd_spRange.height = this._mapItem.width * (range + 1)
+            this.nd_spRange.width = this.nd_spRange.height = this._mapItem.width * (range * 2 + 1)
             this._runSelected(true)
         } else {
             this._runSelected(false)
