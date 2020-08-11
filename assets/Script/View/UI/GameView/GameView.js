@@ -26,6 +26,9 @@ export default cc.Class({
     _onLoad() {
         cc.log(cc.js.getClassName(this) + ` _onLoad`)
 
+        this.sc_gameUICpnt = cc.instantiate(this.gameUICpnt).getComponent(this.gameUICpnt.name)
+        this.nd_gameUICpntCtn.addChild(this.sc_gameUICpnt.node)
+
         // Game
         this.JKModelUpdateTool.put(Const.GameView.CpntName.Game, {
             widthItemNum: 4 + Const.Game.GridWidth,
@@ -40,8 +43,6 @@ export default cc.Class({
         this.JKModelUpdateTool.put(Const.GameView.CpntName.GameUI, {
             labBtnClose: `退出游戏`,
         })
-        this.sc_gameUICpnt = cc.instantiate(this.gameUICpnt).getComponent(this.gameUICpnt.name)
-        this.nd_gameUICpntCtn.addChild(this.sc_gameUICpnt.node)
     },
 
     _onEnable() {

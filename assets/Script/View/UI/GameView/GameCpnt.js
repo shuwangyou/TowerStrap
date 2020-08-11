@@ -441,20 +441,21 @@ cc.Class({
                 } else {
                     // 击中
                     if (sc_targetEnemy.onHit(Const.Game.Tower.BulletDamage) <= 0) {
+                        sc_targetEnemy.playScore(Const.Game.Enemy.Score)
                         let targetGridPos = sc_targetEnemy.getGridPos()
-                            targetMapItem = this._mapItemsMap.get(targetGridPos.x).get(targetGridPos.y),
+                        targetMapItem = this._mapItemsMap.get(targetGridPos.x).get(targetGridPos.y),
                             sc_targetMapItem = targetMapItem.getComponent(targetMapItem.name),
                             sc_targetMapItem.removeEnemy(targetEnemy)
-                            targetTowers = sc_targetMapItem.getTowerGridPosInRange()
-                            targetTowers.forEach((value, x) => {
-                                value.forEach((towerPos, y) => {
-                                    let targetTower = this._towerItemsMap.get(x).get(y)
-                                    if (targetTower && targetTower.isValid && targetTower.parent) {
-                                        let sc_targetTower = targetTower.getComponent(targetTower.name)
-                                        sc_targetTower.removeEnemy(targetEnemy)
-                                    }
-                                })
+                        targetTowers = sc_targetMapItem.getTowerGridPosInRange()
+                        targetTowers.forEach((value, x) => {
+                            value.forEach((towerPos, y) => {
+                                let targetTower = this._towerItemsMap.get(x).get(y)
+                                if (targetTower && targetTower.isValid && targetTower.parent) {
+                                    let sc_targetTower = targetTower.getComponent(targetTower.name)
+                                    sc_targetTower.removeEnemy(targetEnemy)
+                                }
                             })
+                        })
                         this._enemyPool.put(targetEnemy)
                         this._curEnemies.delete(targetEnemy.uuid)
                         this._setScore(this._getScore() + Const.Game.Enemy.Score)
@@ -523,7 +524,7 @@ cc.Class({
         }
     },
 
-    _getScore(){
+    _getScore() {
         return Number(this.lab_score.string)
     },
 
