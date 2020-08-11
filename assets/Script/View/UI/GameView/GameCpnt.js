@@ -199,34 +199,13 @@ cc.Class({
         this._curEnemies && this._curEnemies.forEach(enemy => {
             if (enemy && enemy.isValid && enemy.parent) {
                 let sc_enemy = enemy.getComponent(enemy.name),
-                    startItem = sc_enemy.startItem,
-                    endItem = sc_enemy.endItem,
-                    ways = this._enemyWaysMap.get(startItem).get(endItem),
-                    wayIndex = 1,
-                    minDistance = enemy.position.sub(ways[0]).mag(),
-                    minIndex = 0,
-                    curGridPos = this._pos2GridPos(enemy.position),
-                    nextIndex = 0
-                for (let index = 0; index < ways.length; index++) {
-                    let mapItem = ways[index],
-                        distance = enemy.position.sub(mapItem).mag()
-                    if (distance <= minDistance) {
-                        minDistance = distance
-                        minIndex = index || 1
-                    }
-                }
-                let minMapItem = ways[minIndex],
-                    sc_minMapItem = minMapItem.getComponent(minMapItem.name),
-                    minGridPos = sc_minMapItem.getGridPos(),
-                    nextMapItem = ways[minIndex + 1],
-                    sc_nextMapItem = nextMapItem && nextMapItem.getComponent(nextMapItem.name),
-                    nextGridPos = sc_nextMapItem && sc_nextMapItem.getGridPos()
-                if (nextGridPos && ((minGridPos.x <= curGridPos.x && curGridPos.x <= nextGridPos.x) || (nextGridPos.x <= curGridPos.x && curGridPos.x <= minGridPos.x))) {
-                    nextIndex = minIndex + 1
-                }
-                wayIndex = nextIndex || minIndex
+                    gridPos = sc_enemy.getGridPos()
+                    startItem = this._mapItemsMap.get(gridPos.x).get(gridPos.y),
+                    endItem = sc_enemy.endItem
                 enemy.stopAllActions()
-                this._enemyRun(enemy, ways, wayIndex)
+                this._aStart.searchWay(startItem, endItem, (steps) => {
+                    this._enemyRun(enemy, steps, 1)
+                })
             }
         })
     },
