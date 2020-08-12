@@ -142,7 +142,8 @@ export default class JKAStart {
                         }
                         if (allMoveAbled) {
                             dealIndexes.push(index)
-                            break
+                            // delete steps[index]
+                            // return this._optimizeResult(steps)
                         }
                     }
                 }
@@ -162,7 +163,7 @@ export default class JKAStart {
         if (dealIndexes.length > 0) {
             return this._optimizeResult(tempSteps)
         } else {
-            return tempSteps
+            return steps
         }
     }
 
