@@ -19,14 +19,9 @@ class APathfindingHex {
 	 * @param {Coordinate} allC 网格
 	 */
 	_findC(inC, allC) {
-		allC.forEach(coordinate => {
-			if (coordinate.equals(inC)) {
-				return coordinate
-			}
-		})
-		return null
+		return allC.includes(inC)
 	}
-	
+
 	/**
 	 * 单位操作，计算附近节点权值，如果找到终点则返回true
 	 * @param {Coordinate} curC 当前节点
@@ -34,13 +29,7 @@ class APathfindingHex {
 	 */
 	_makeOne(curC, desC) {
 		this._closeList.push(curC)
-		for (let index = 0; index < this._openList.length; index++) {
-			let tempC = this._openList[index]
-			if (tempC===curC) {
-				delete this._openList[index]
-				break
-			}
-		}
+		delete this._openList[this._openList.indexOf(curC)]
 		let nearListC = curC.findNear()
 		nearListC.forEach(coordinate => {
 			let temp = this._findC(coordinate, allC)
@@ -172,46 +161,105 @@ class Coordinate {
 		this.F = null
 		this.G = null
 		this.H = null
+		this._up = cc.js.createMap()
+		this._down = cc.js.createMap()
+		this._upLeft = cc.js.createMap()
+		this._upRight = cc.js.createMap()
+		this._downLeft = cc.js.createMap()
+		this._downRight = cc.js.createMap()
+	}
+
+	setGridPos(x, y) {
+		this.x = x
+		this.y = y
+		this._setUp()
+		this._setDown()
+		this._setUpL()
+		this._setUpR()
+		this._setDownL()
+		this._setDownR()
+	}
+
+	getGridPos() {
+		let gridPos = cc.js.createMap()
+		gridPos.x = this.x
+		gridPos.y = this.y
+
+		return gridPos
+	}
+
+	_setUp() {
+		this._up.x = this.x
+		this._up.y = this.y - 1
+	}
+
+	_setDown() {
+		this._up.x = this.x
+		this._up.y = this.y + 1
+	}
+
+	_setUpL() {
+		if (this.x % 2 == 0) {
+			this._up.x = this.x - 1
+			this._up.y = this.y - 1
+		} else {
+			this._up.x = this.x - 1
+			this._up.y = this.y
+		}
+	}
+
+	_setUpR() {
+		if (this.x % 2 == 0) {
+			this._up.x = this.x + 1
+			this._up.y = this.y - 1
+		} else {
+			this._up.x = this.x + 1
+			this._up.y = this.y
+		}
+	}
+
+	_setDownL() {
+		if (this.x % 2 == 0) {
+			this._up.x = this.x - 1
+			this._up.y = this.y
+		} else {
+			this._up.x = this.x - 1
+			this._up.y = this.y + 1
+		}
+	}
+
+	_setDownR() {
+		if (this.x % 2 == 0) {
+			this._up.x = this.x + 1
+			this._up.y = this.y
+		} else {
+			this._up.x = this.x + 1
+			this._up.y = this.y + 1
+		}
 	}
 
 	_findUp() {
-		return new Coordinate(x, y - 1)
+		return this._up
 	}
 
 	_findDown() {
-		return new Coordinate(x, y + 1)
+		return this._down
 	}
 
 	_findUpL() {
-		if (x % 2 == 0) {
-			return new Coordinate(x - 1, y - 1)
-		} else {
-			return new Coordinate(x - 1, y)
-		}
+		return this._upLeft
 	}
 
 	_findUpR() {
-		if (x % 2 == 0) {
-			return new Coordinate(x + 1, y - 1)
-		} else {
-			return new Coordinate(x + 1, y)
-		}
+		return this._upRight
 	}
 
 	_findDownL() {
-		if (x % 2 == 0) {
-			return new Coordinate(x - 1, y)
-		} else {
-			return new Coordinate(x - 1, y + 1)
-		}
+		return this._downLeft
 	}
 
 	_findDownR() {
-		if (x % 2 == 0) {
-			return new Coordinate(x + 1, y)
-		} else {
-			return new Coordinate(x + 1, y + 1)
-		}
+		return this._downRight
 	}
 
 	//===========================================================================

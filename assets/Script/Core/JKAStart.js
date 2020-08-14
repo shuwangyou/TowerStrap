@@ -63,10 +63,7 @@ export default class JKAStart {
                     return true
                 }
             }
-            this._openSCItems.sort((a, b) => {
-                return a.sumNum - b.sumNum
-            })
-            if (this._getClosestOpenSCItems(this._openSCItems.shift(), sc_starItemGrid, sc_endItemGrid)) {
+            if (this._getClosestOpenSCItems(this._openSCItems.sort((a, b) => a.sumNum - b.sumNum).shift(), sc_starItemGrid, sc_endItemGrid)) {
                 return true
             }
         } else {
