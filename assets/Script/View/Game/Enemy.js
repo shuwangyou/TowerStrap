@@ -79,7 +79,7 @@ cc.Class({
             lab.node.x = this.node.x
             lab.node.y = this.node.y + this.node.height * 0.5
             lab.node.opacity = 255
-            lab.string = `+` + score.toString()
+            lab.string = `+` + score.toString() + `￥`
             let dt = 0.2
             lab.node.runAction(cc.sequence(cc.moveBy(dt, cc.v2(0, 30), 30), cc.callFunc(() => {
                 lab.node.active = 0
@@ -91,6 +91,10 @@ cc.Class({
 
     getHP() {
         return this._hp
+    },
+
+    getFullHP() {
+        return Math.ceil(this._fullHP)
     },
 
     addBullet(bullet) {

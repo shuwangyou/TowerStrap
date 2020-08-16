@@ -266,10 +266,55 @@ cc.Class({
                     this._enemyRun(enemy, ways, wayIndex)
                 })))
             } else {
-                this._enemyPool.put(enemy)
                 this._setPlayerHP(this._getPlayerHP() - 1)
-                this._curEnemies.delete(enemy.uuid)
+                this._removeEnemyFromMap(enemy)
             }
+        }
+    },
+
+    _addEnemyToMap(enemy, mapItem) {
+        cc.log(cc.js.getClassName(this) + ` _addEnemyToMap`)
+
+        let sc_enemy = enemy.getComponent(enemy.name),
+            sc_mapItem = mapItem.getComponent(mapItem.name),
+            gridPos = sc_mapItem.getGridPos(),
+            towerGridPosInRange = sc_mapItem.getTowerGridPosInRange()
+        sc_mapItem.addEnemy(enemy)
+        if (towerGridPosInRange.size > 0) {
+            towerGridPosInRange.forEach((value, x) => {
+                value.forEach((towerPos, y) => {
+                    let tower = this._towerItemsMap.get(x).get(y),
+                        sc_tower = tower.getComponent(tower.name)
+                    sc_tower.addEnemy(enemy)
+                })
+            })
+        }
+        sc_enemy.setGridPos(gridPos)
+    },
+
+    _removeEnemyFromMap(enemy, remove = true) {
+        cc.log(cc.js.getClassName(this) + ` _removeEnemy`)
+
+        let sc_enemy = enemy.getComponent(enemy.name),
+            gridPos = sc_enemy.getGridPos(),
+            mapItem = this._mapItemsMap.get(gridPos.x).get(gridPos.y),
+            sc_mapItem = mapItem.getComponent(mapItem.name),
+            towerGridPosInRange = sc_mapItem.getTowerGridPosInRange()
+        sc_mapItem.removeEnemy(enemy)
+        if (towerGridPosInRange.size > 0) {
+            towerGridPosInRange.forEach((value, x) => {
+                value.forEach((towerPos, y) => {
+                    let tower = this._towerItemsMap.get(x).get(y)
+                    if (tower && tower.isValid && tower.parent) {
+                        let sc_tower = tower.getComponent(tower.name)
+                        sc_tower.removeEnemy(enemy)
+                    }
+                })
+            })
+        }
+        if (remove) {
+            this._enemyPool.put(enemy)
+            this._curEnemies.delete(enemy.uuid)
         }
     },
 
@@ -279,45 +324,8 @@ cc.Class({
                 gridPos = this._pos2GridPos(enemy.position),
                 lastGridPos = sc_enemy.getGridPos()
             if (gridPos.x !== lastGridPos.x || gridPos.y !== lastGridPos.y) {
-                let mapItem = this._mapItemsMap.get(gridPos.x).get(gridPos.y),
-                    lastMapItem = this._mapItemsMap.get(lastGridPos.x).get(lastGridPos.y),
-                    sc_mapItem = mapItem.getComponent(mapItem.name),
-                    sc_lastMapItem = lastMapItem.getComponent(lastMapItem.name),
-                    towerGridPosInRange = sc_mapItem.getTowerGridPosInRange(),
-                    lastTowerGridPosInRange = sc_lastMapItem.getTowerGridPosInRange(),
-                    addTowersMap = new Map()
-                sc_mapItem.addEnemy(enemy)
-                if (towerGridPosInRange.size > 0) {
-                    towerGridPosInRange.forEach((value, x) => {
-                        value.forEach((towerPos, y) => {
-                            let tower = this._towerItemsMap.get(x).get(y)
-                            if (tower && tower.isValid && tower.parent) {
-                                addTowersMap.set(tower.uuid, tower)
-                            }
-                        })
-                    })
-                }
-                sc_lastMapItem.removeEnemy(enemy)
-                if (lastTowerGridPosInRange.size > 0) {
-                    lastTowerGridPosInRange.forEach((value, x) => {
-                        value.forEach((towerPos, y) => {
-                            let tower = this._towerItemsMap.get(x).get(y)
-                            if (tower && tower.isValid && tower.parent) {
-                                if (!addTowersMap.get(tower.uuid)) {
-                                    let sc_tower = tower.getComponent(tower.name)
-                                    sc_tower.removeEnemy(enemy)
-                                }
-                            }
-                        })
-                    })
-                }
-                addTowersMap.forEach((tower, uuid) => {
-                    if (tower && tower.isValid && tower.parent) {
-                        let sc_tower = tower.getComponent(tower.name)
-                        sc_tower.addEnemy(enemy)
-                    }
-                })
-                sc_enemy.setGridPos(gridPos)
+                this._removeEnemyFromMap(enemy, false)
+                this._addEnemyToMap(enemy, this._mapItemsMap.get(gridPos.x).get(gridPos.y))
             }
         }
     },
@@ -433,24 +441,9 @@ cc.Class({
                 } else {
                     // 击中
                     if (sc_targetEnemy.onHit(Const.Game.Tower.BulletDamage) <= 0) {
-                        sc_targetEnemy.playScore(Const.Game.Enemy.Score)
-                        let targetGridPos = sc_targetEnemy.getGridPos(),
-                            targetMapItem = this._mapItemsMap.get(targetGridPos.x).get(targetGridPos.y),
-                            sc_targetMapItem = targetMapItem.getComponent(targetMapItem.name),
-                            targetTowers = sc_targetMapItem.getTowerGridPosInRange()
-                        sc_targetMapItem.removeEnemy(targetEnemy)
-                        targetTowers.forEach((value, x) => {
-                            value.forEach((towerPos, y) => {
-                                let targetTower = this._towerItemsMap.get(x).get(y)
-                                if (targetTower && targetTower.isValid && targetTower.parent) {
-                                    let sc_targetTower = targetTower.getComponent(targetTower.name)
-                                    sc_targetTower.removeEnemy(targetEnemy)
-                                }
-                            })
-                        })
-                        this._enemyPool.put(targetEnemy)
-                        this._curEnemies.delete(targetEnemy.uuid)
-                        this._setScore(this._getScore() + Const.Game.Enemy.Score)
+                        sc_targetEnemy.playScore(sc_targetEnemy.getFullHP())
+                        this._setScore(this._getScore() + sc_targetEnemy.getFullHP())
+                        this._removeEnemyFromMap(targetEnemy)
                     }
                     this._bulletPool.put(bullet)
                 }
