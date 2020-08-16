@@ -514,6 +514,8 @@ cc.Class({
     },
 
     _gameOver() {
+        cc.log(cc.js.getClassName(this) + ` _gameOver`)
+        
         this.unscheduleAllCallbacks()
         this.nd_unitCtn.removeAllChildren()
         this._curEnemies.clear()
